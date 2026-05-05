@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PDF Chat · Intelligent Chat</title>
+    <!-- Google Fonts & modern feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #e9eff7 0%, #dfe6f0 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .glass-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .hero-header {
+            background: linear-gradient(135deg, #1a2a4f 0%, #0f1a2f 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .hero-header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(120deg, #FFFFFF, #c0d4ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hero-header h1 i {
+            background: none;
+            background-clip: unset;
+            -webkit-background-clip: unset;
+            color: #7aa9ff;
+            font-size: 1.8rem;
+        }
+
+        .sub {
+            color: #9bb5e0;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.8rem;
+            padding: 2rem 2rem 2rem 2rem;
+        }
+
+        .column-left {
+            flex: 1.2;
+            min-width: 260px;
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            border-radius: 1.6rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+
+        .column-right {
+            flex: 1.8;
+            min-width: 320px;
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            border-radius: 1.6rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* PDF preview card */
+        .image-card {
+            background: #f8fafd;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-bottom: 1.8rem;
+            border: 1px solid #eef2f9;
+            transition: 0.2s;
+        }
+
+        .image-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2c3e66;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pdf-preview-area {
+            background: #eef2fa;
+            border-radius: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            overflow: hidden;
+            transition: all 0.2s;
+            border: 1px dashed #b9c8f0;
+        }
+
+        .placeholder-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8aa4cc;
+            padding: 2rem;
+            gap: 12px;
+        }
+
+        .placeholder-icon i {
+            font-size: 3rem;
+            opacity: 0.6;
+        }
+
+        /* pdf info box shown after load */
+        .pdf-info-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .pdf-info-box i {
+            font-size: 3.5rem;
+            color: #c0392b;
+        }
+
+        .pdf-info-box .pdf-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1f3a6b;
+            word-break: break-all;
+            max-width: 200px;
+        }
+
+        .pdf-info-box .pdf-meta {
+            font-size: 0.78rem;
+            color: #7c8aa5;
+        }
+
+        /* upload zone */
+        .upload-zone {
+            background: #ffffff;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            margin-bottom: 1.8rem;
+            border: 1px solid #e9edf4;
+        }
+
+        .custom-file {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .file-label {
+            background: #f0f4fe;
+            padding: 0.7rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1f3a6b;
+            border: 1px solid #dce5f5;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-label:hover {
+            background: #e6edfd;
+            border-color: #8aaee6;
+        }
+
+        #img-input {
+            display: none;
+        }
+
+        .extract-btn {
+            background: linear-gradient(100deg, #1f3b6c, #152b4e);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 60px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .extract-btn:hover {
+            background: linear-gradient(100deg, #2a4b82, #1c3460);
+            transform: scale(0.97);
+        }
+
+        .status-badge {
+            background: #eef2ff;
+            padding: 0.4rem 0.9rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #1e3a6b;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* info PDF cargado */
+        .ocr-preview {
+            background: #fbfdff;
+            border-radius: 1rem;
+            padding: 1rem;
+            border-left: 4px solid #3b82f6;
+            margin-top: 1rem;
+        }
+
+        .ocr-preview h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #3b82f6;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #preview {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            color: #1f2d48;
+            font-weight: 400;
+            white-space: pre-wrap;
+            font-family: 'Inter', monospace;
+            border: 1px solid #eef2f8;
+        }
+
+        /* chat section */
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .chat-header h3 {
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2a4f, #283b60);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-size: 1.3rem;
+        }
+
+        #chat-box {
+            background: #ffffffea;
+            border-radius: 1.2rem;
+            height: 320px;
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid #eef2fa;
+            box-shadow: inset 0 1px 3px #00000008, 0 1px 2px white;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeSlide 0.2s ease;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .bubble {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+
+        .user .bubble {
+            background: #1f3b6c;
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .ai .bubble {
+            background: #f0f4fa;
+            color: #1e293b;
+            border-bottom-left-radius: 6px;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef2ff;
+            color: #2c3e66;
+            font-size: 0.9rem;
+        }
+
+        .user .avatar {
+            background: #2c446c;
+            color: white;
+            order: 2;
+        }
+
+        .input-group-chat {
+            display: flex;
+            gap: 0.8rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 70px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            transition: 0.2s;
+        }
+
+        #user-query {
+            flex: 1;
+            border: none;
+            padding: 12px 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            background: transparent;
+            outline: none;
+        }
+
+        #btn-chat {
+            background: #1f3b6c;
+            border: none;
+            color: white;
+            width: 46px;
+            height: 46px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #btn-chat:disabled, .extract-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #btn-chat:not(:disabled):hover {
+            background: #2b4a7a;
+            transform: scale(1.02);
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.8rem;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #eef2fa;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bbd0f0;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 780px) {
+            .dashboard {
+                flex-direction: column;
+                padding: 1.2rem;
+            }
+            .bubble {
+                max-width: 90%;
+            }
+        }
+
+        .text-muted {
+            font-size: 0.7rem;
+            color: #7c8aa5;
+            margin-top: 0.2rem;
+        }
+
+        .loader-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+            animation: pulse 1s infinite;
+            margin-left: 5px;
+        }
+
+        @keyframes pulse {
+            0%,100%{ opacity: 0.3; transform: scale(0.8);}
+            50%{ opacity:1; transform: scale(1);}
+        }
+    </style>
+</head>
+<body>
+<div class="glass-container">
+    <div class="hero-header">
+        <h1><i class="fas fa-file-pdf"></i> PDF Chat · Context Chat</h1>
+        <div class="sub"><i class="fas fa-magic"></i> Sube un PDF y conversa con Gemini sobre su contenido completo</div>
+    </div>
+
+    <div class="dashboard">
+        <div class="column-left">
+            <div class="image-card">
+                <div class="image-label">
+                    <i class="fas fa-file-pdf"></i> <span>Documento activo</span>
+                </div>
+                <div class="pdf-preview-area" id="pdf-preview-area">
+                    <div id="placeholder-img" class="placeholder-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Sube un archivo PDF</span>
+                        <span class="text-muted">Se mostrará aquí</span>
+                    </div>
+                    <div id="pdf-info-box" class="pdf-info-box">
+                        <i class="fas fa-file-pdf"></i>
+                        <div class="pdf-name" id="pdf-name-label">—</div>
+                        <div class="pdf-meta" id="pdf-meta-label">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- zona de carga -->
+            <div class="upload-zone">
+                <div class="custom-file">
+                    <label for="img-input" class="file-label">
+                        <i class="fas fa-folder-open"></i> Seleccionar PDF
+                    </label>
+                    <input type="file" id="img-input" accept="application/pdf" />
+                    <button id="btn-upload" class="extract-btn">
+                        <i class="fas fa-upload"></i> Cargar PDF
+                    </button>
+                </div>
+                <div class="status-container">
+                    <span id="status-msg" class="status-badge"><i class="far fa-clock"></i> Esperando PDF</span>
+                </div>
+            </div>
+
+            <!-- info del PDF cargado -->
+            <div class="ocr-preview">
+                <h4><i class="fas fa-info-circle"></i> Estado del documento</h4>
+                <div id="preview">
+                    <span style="opacity:0.6;">📄 La información del PDF aparecerá aquí tras cargarlo...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: chat conversacional -->
+        <div class="column-right">
+            <div class="chat-header">
+                <h3><i class="fas fa-comment-dots"></i> Asistente inteligente</h3>
+                <div class="status-badge" id="chat-ready-badge" style="background:#e0f0ea;">
+                    <i class="fas fa-power-off"></i> Inactivo
+                </div>
+            </div>
+            <div id="chat-box">
+                <div class="message ai">
+                    <div class="avatar"><i class="fas fa-brain"></i></div>
+                    <div class="bubble"> Sube un PDF y cárgalo para poder preguntarme cualquier cosa sobre su contenido.</div>
+                </div>
+            </div>
+            <div class="input-group-chat">
+                <input type="text" id="user-query" placeholder="Escribe tu pregunta sobre el PDF..." disabled>
+                <button id="btn-chat" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="text-muted" style="margin-top: 10px; text-align: center;">
+                <i class="fas fa-gem"></i> Respuestas basadas exclusivamente en el documento PDF cargado
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- variables de estado ----------
+    let pdfFileName = "";          // nombre del archivo
+    let chatHistory = [];          // historial de conversación
+    let docId = "";                 // ID del documento en el backend
+
+    // elementos DOM
+    const imgInput = document.getElementById("img-input");
+    const btnUpload = document.getElementById("btn-upload");
+    const btnChat = document.getElementById("btn-chat");
+    const previewDiv = document.getElementById("preview");
+    const chatBox = document.getElementById("chat-box");
+    const userQueryInput = document.getElementById("user-query");
+    const statusMsgSpan = document.getElementById("status-msg");
+    const placeholderDiv = document.getElementById("placeholder-img");
+    const pdfInfoBox = document.getElementById("pdf-info-box");
+    const pdfNameLabel = document.getElementById("pdf-name-label");
+    const pdfMetaLabel = document.getElementById("pdf-meta-label");
+    const chatReadyBadge = document.getElementById("chat-ready-badge");
+
+    // Mostrar info del PDF seleccionado
+    function displayPDFInfo(file) {
+        if (!file) {
+            pdfInfoBox.style.display = "none";
+            placeholderDiv.style.display = "flex";
+            return;
+        }
+        pdfNameLabel.textContent = file.name;
+        pdfMetaLabel.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        placeholderDiv.style.display = "none";
+        pdfInfoBox.style.display = "flex";
+    }
+
+    // Al seleccionar un nuevo PDF
+    imgInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            pdfFileName = file.name;
+            displayPDFInfo(file);
+            // resetear estado hasta que se cargue
+            previewDiv.innerHTML = `<span style="opacity:0.6;">📄 Pendiente de carga...</span>`;
+            userQueryInput.disabled = true;
+            btnChat.disabled = true;
+            chatReadyBadge.innerHTML = `<i class="fas fa-hourglass-half"></i> PDF pendiente`;
+            chatReadyBadge.style.background = "#ffe6cc";
+            statusMsgSpan.innerHTML = `<i class="far fa-clock"></i> Nuevo PDF seleccionado`;
+        } else {
+            pdfInfoBox.style.display = "none";
+            placeholderDiv.style.display = "flex";
+        }
+    });
+
+    // Cargar PDF: validar en servidor y convertir a base64 localmente
+    btnUpload.addEventListener("click", async () => {
+        if (!imgInput.files.length) {
+            statusMsgSpan.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Selecciona un PDF primero`;
+            return;
+        }
+        const file = imgInput.files[0];
+
+        statusMsgSpan.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Validando PDF...`;
+
+        // 1. Validar en servidor
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData
+            });
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || "Error al validar el PDF");
+            }
+            const data = await response.json();
+
+            // 2. Convertir a base64 localmente para enviarlo en cada chat
+            statusMsgSpan.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Procesando PDF...`;
+            docId = data.doc_id;
+
+            // Actualizar UI
+            previewDiv.innerHTML = `✅ ${data.mensaje}\n📊 ${data.paginas_estimadas}\n📄 Archivo: ${file.name}`;
+            statusMsgSpan.innerHTML = `<i class="fas fa-check-circle"></i> PDF listo para consultas`;
+
+            // Habilitar chat
+            userQueryInput.disabled = false;
+            btnChat.disabled = false;
+            chatReadyBadge.innerHTML = `<i class="fas fa-check-circle"></i> Contexto listo`;
+            chatReadyBadge.style.background = "#d9f0e3";
+
+            // Mensaje de bienvenida en el chat
+            const systemMsg = document.createElement("div");
+            systemMsg.className = "message ai";
+            systemMsg.innerHTML = `<div class="avatar"><i class="fas fa-info-circle"></i></div>
+                                    <div class="bubble" style="background:#e9f0ff;">✅ PDF cargado: <strong>${file.name}</strong>. ¡Ya puedes hacerme preguntas sobre su contenido!</div>`;
+            chatBox.appendChild(systemMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            chatHistory = [];
+
+        } catch (err) {
+            console.error(err);
+            statusMsgSpan.innerHTML = `<i class="fas fa-times-circle"></i> Error al cargar el PDF`;
+            previewDiv.innerHTML = `<span style="color:#c00;">Error: ${err.message}</span>`;
+            userQueryInput.disabled = true;
+            btnChat.disabled = true;
+            chatReadyBadge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error`;
+            chatReadyBadge.style.background = "#fde8e8";
+        }
+    });
+
+    // Agregar mensajes al chat visualmente
+    function addMessageToChat(sender, text, isError = false) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `message ${sender === "user" ? "user" : "ai"}`;
+        const avatarContent = sender === "user" ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+        let bubbleText = isError ? `⚠️ ${text}` : text;
+        msgDiv.innerHTML = `
+            <div class="avatar">${avatarContent}</div>
+            <div class="bubble">${bubbleText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        `;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Lógica de chat con backend /api/chat
+    btnChat.addEventListener("click", async () => {
+        const question = userQueryInput.value.trim();
+        if (!question) return;
+        if (!docId) {
+            addMessageToChat("ai", "No hay PDF cargado. Por favor, carga un PDF primero.", true);
+            return;
+        }
+
+        btnChat.disabled = true;
+        userQueryInput.disabled = true;
+
+        addMessageToChat("user", question);
+        userQueryInput.value = "";
+
+        // Indicador de "pensando"
+        const thinkingId = "thinking-msg";
+        const thinkingDiv = document.createElement("div");
+        thinkingDiv.className = "message ai";
+        thinkingDiv.id = thinkingId;
+        thinkingDiv.innerHTML = `<div class="avatar"><i class="fas fa-robot"></i></div><div class="bubble" style="background:#eef2ff;">Pensando <span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>`;
+        chatBox.appendChild(thinkingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const historialParaEnvio = chatHistory.slice(-8);
+            const payload = {
+                pregunta: question,
+                doc_id: docId
+            };
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Error ${response.status}: ${errText.substring(0, 100)}`);
+            }
+            const data = await response.json();
+            const aiAnswer = data.respuesta || "No se recibió respuesta válida.";
+
+            document.getElementById(thinkingId)?.remove();
+            addMessageToChat("ai", aiAnswer);
+
+            chatHistory.push(`Usuario: ${question}`);
+            chatHistory.push(`Asistente: ${aiAnswer}`);
+            if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
+        } catch (err) {
+            document.getElementById(thinkingId)?.remove();
+            addMessageToChat("ai", `No se pudo contactar con el asistente: ${err.message}`, true);
+            console.error(err);
+        } finally {
+            btnChat.disabled = false;
+            userQueryInput.disabled = false;
+            userQueryInput.focus();
+        }
+    });
+
+    // Enter para enviar
+    userQueryInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !btnChat.disabled && !userQueryInput.disabled) {
+            e.preventDefault();
+            btnChat.click();
+        }
+    });
+</script>
+</body>
+</html>
