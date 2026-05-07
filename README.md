@@ -1,8 +1,8 @@
-# 🤖 Multimodal AI Hub
+# Multimodal AI Hub
 
 Plataforma inteligente que combina **Chat con PDF** y **Chat con OCR** usando IA de Gemini.
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
 ### 📄 Chat con PDF
 - Sube documentos PDF y haz preguntas sobre su contenido
@@ -14,13 +14,13 @@ Plataforma inteligente que combina **Chat con PDF** y **Chat con OCR** usando IA
 - Reconocimiento óptico de caracteres con PaddleOCR
 - Conversaciones inteligentes sobre el texto extraído
 
-## 🛠️ Tecnologías
+## Tecnologías
 - FastAPI (Backend)
 - Gemini AI (Modelo de lenguaje)
 - PaddleOCR (Reconocimiento óptico)
 - Sentence Transformers (Embeddings locales)
 
-## 📦 Instalación
+## Instalación
 
 ```bash
 git clone https://github.com/tu-usuario/multimodal-ai-hub.git
