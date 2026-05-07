@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Visual OCR · Intelligent Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #e9eff7 0%, #dfe6f0 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .glass-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+
+        .hero-header {
+            background: linear-gradient(135deg, #1a2a4f 0%, #0f1a2f 100%);
+            padding: 2rem 2.5rem;
+        }
+
+        .hero-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #FFFFFF, #c0d4ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hero-header h1 i {
+            color: #7aa9ff;
+            font-size: 2rem;
+        }
+
+        .sub {
+            color: #9bb5e0;
+            margin-top: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 2rem;
+            padding: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .column-left {
+            flex: 1.2;
+            min-width: 320px;
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.8rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .column-right {
+            flex: 1.8;
+            min-width: 400px;
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.8rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a2a4f;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #eef2ff;
+        }
+
+        .section-title i {
+            color: #3b82f6;
+        }
+
+        .image-preview-area {
+            background: #f8fafd;
+            border-radius: 1rem;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #cbd5e1;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .image-preview-area:hover {
+            border-color: #3b82f6;
+            background: #f1f5f9;
+        }
+
+        .image-preview-area img {
+            max-width: 100%;
+            max-height: 260px;
+            object-fit: contain;
+        }
+
+        .placeholder-icon {
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .placeholder-icon i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-zone {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .custom-file {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .file-label {
+            flex: 1;
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s;
+        }
+
+        .file-label:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        .extract-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1f3b6c, #152b4e);
+            border: none;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .extract-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(31, 59, 108, 0.3);
+        }
+
+        .extract-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .ocr-preview {
+            margin-top: 1.5rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .ocr-preview h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #ocr-text {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #475569;
+            white-space: pre-wrap;
+        }
+
+        .status-container {
+            margin-top: 1rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.5rem 1rem;
+            background: #eef2ff;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #1e3a8a;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #eef2ff;
+        }
+
+        .chat-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2a4f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header h3 i {
+            color: #3b82f6;
+        }
+
+        #chat-box {
+            background: #f8fafc;
+            border-radius: 1rem;
+            min-height: 450px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Scrollbar personalizado */
+        #chat-box::-webkit-scrollbar,
+        #ocr-text::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat-box::-webkit-scrollbar-track,
+        #ocr-text::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        #chat-box::-webkit-scrollbar-thumb,
+        #ocr-text::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+
+        #chat-box::-webkit-scrollbar-thumb:hover,
+        #ocr-text::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .user .avatar {
+            background: #1f3b6c;
+            color: white;
+            order: 2;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .ai .bubble {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user .bubble {
+            background: #1f3b6c;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.8rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 60px;
+            padding: 0.3rem;
+            transition: all 0.2s;
+        }
+
+        .input-group:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        #user-query {
+            flex: 1;
+            border: none;
+            padding: 0.9rem 1.2rem;
+            font-size: 0.95rem;
+            background: transparent;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #btn-send {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #1f3b6c;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #btn-send:hover:not(:disabled) {
+            background: #2a4b82;
+            transform: scale(1.05);
+        }
+
+        #btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(-4px);
+        }
+
+        .loader-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #3b82f6;
+            animation: pulse 1s infinite;
+            margin: 0 2px;
+        }
+
+        .loader-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loader-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .text-muted {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .dashboard {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .bubble {
+                max-width: 85%;
+            }
+            
+            .hero-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .hero-header {
+                padding: 1.5rem;
+            }
+            
+            .column-left,
+            .column-right {
+                min-width: auto;
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="glass-container">
+    <div class="hero-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <h1>
+                <i class="fas fa-image"></i> 
+                Visual OCR · Chat
+            </h1>
+            <a href="/" class="btn-back">
+                <i class="fas fa-arrow-left"></i> 
+                Volver al menú
+            </a>
+        </div>
+        <div class="sub">
+            <i class="fas fa-magic"></i> 
+            Extrae texto de imágenes y conversa con Gemini sobre su contenido
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="column-left">
+            <div class="section-title">
+                <i class="fas fa-image"></i>
+                Imagen activa
+            </div>
+            
+            <div class="image-preview-area" id="image-preview-area">
+                <div id="placeholder-img" class="placeholder-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p><strong>Sube una imagen</strong></p>
+                    <p style="font-size: 0.8rem;">Formatos: JPG, PNG</p>
+                </div>
+                <img id="img-preview" src="" style="display: none;">
+            </div>
+
+            <div class="upload-zone">
+                <div class="custom-file">
+                    <label for="img-input" class="file-label">
+                        <i class="fas fa-folder-open"></i> Seleccionar imagen
+                    </label>
+                    <input type="file" id="img-input" accept="image/jpeg,image/png,image/jpg" style="display:none" />
+                </div>
+                <button id="btn-process" class="extract-btn">
+                    <i class="fas fa-robot"></i> Extraer texto
+                </button>
+                <div class="status-container">
+                    <span id="status-msg" class="status-badge">
+                        <i class="far fa-clock"></i> Esperando imagen
+                    </span>
+                </div>
+            </div>
+
+            <div class="ocr-preview">
+                <h4><i class="fas fa-file-alt"></i> Texto extraído</h4>
+                <div id="ocr-text">
+                    <span style="opacity:0.6;">📄 El texto aparecerá aquí después de extraer OCR...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="column-right">
+            <div class="chat-header">
+                <h3><i class="fas fa-comments"></i> Asistente Inteligente</h3>
+                <div class="status-badge" id="chat-ready-badge">
+                    <i class="fas fa-power-off"></i> Inactivo
+                </div>
+            </div>
+            
+            <div id="chat-box">
+                <div class="message ai">
+                    <div class="avatar"><i class="fas fa-robot"></i></div>
+                    <div class="bubble">✨ Sube una imagen, extrae el texto y luego podrás preguntarme cualquier cosa sobre su contenido.</div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="user-query" placeholder="Escribe tu pregunta sobre la imagen..." disabled>
+                <button id="btn-send" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="text-muted">
+                <i class="fas fa-gem"></i> Respuestas basadas exclusivamente en el texto extraído de la imagen
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let extractedText = "";
+    let chatHistory = [];
+    
+    const imgInput = document.getElementById("img-input");
+    const btnProcess = document.getElementById("btn-process");
+    const btnSend = document.getElementById("btn-send");
+    const chatBox = document.getElementById("chat-box");
+    const queryInput = document.getElementById("user-query");
+    const statusMsg = document.getElementById("status-msg");
+    const chatReadyBadge = document.getElementById("chat-ready-badge");
+    const imgPreview = document.getElementById("img-preview");
+    const placeholderImg = document.getElementById("placeholder-img");
+    const ocrTextDiv = document.getElementById("ocr-text");
+
+    function addMessageToChat(sender, text, isError = false) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}`;
+        const icon = sender === "user" ? "fa-user" : "fa-robot";
+        const bubbleText = isError ? `⚠️ ${text}` : text;
+        
+        messageDiv.innerHTML = `
+            <div class="avatar"><i class="fas ${icon}"></i></div>
+            <div class="bubble">${bubbleText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        `;
+        
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return messageDiv;
+    }
+
+    // Previsualizar imagen seleccionada
+    imgInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ex) => {
+                imgPreview.src = ex.target.result;
+                imgPreview.style.display = "block";
+                placeholderImg.style.display = "none";
+            };
+            reader.readAsDataURL(file);
+            
+            // Resetear estado
+            extractedText = "";
+            ocrTextDiv.innerHTML = '<span style="opacity:0.6;">📄 El texto aparecerá aquí después de extraer OCR...</span>';
+            queryInput.disabled = true;
+            btnSend.disabled = true;
+            chatReadyBadge.innerHTML = '<i class="fas fa-hourglass-half"></i> OCR pendiente';
+            chatReadyBadge.style.background = "#ffe6cc";
+            statusMsg.innerHTML = '<i class="far fa-clock"></i> Imagen seleccionada, pendiente de extraer texto';
+        }
+    });
+
+    // Extraer texto OCR
+    btnProcess.addEventListener("click", async () => {
+        if (!imgInput.files[0]) {
+            statusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Selecciona una imagen primero';
+            return;
+        }
+        
+        const file = imgInput.files[0];
+        btnProcess.disabled = true;
+        btnProcess.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Procesando OCR...';
+        statusMsg.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Extrayendo texto de la imagen...';
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const response = await fetch("/api/ocr/upload", { 
+                method: "POST", 
+                body: formData 
+            });
+            
+            if (!response.ok) {
+                throw new Error("Error al procesar la imagen");
+            }
+            
+            const data = await response.json();
+            extractedText = data.text || "No se detectó texto legible en la imagen.";
+            
+            // Mostrar texto extraído
+            ocrTextDiv.innerHTML = extractedText.length > 200 ? extractedText.substring(0, 200) + "..." : extractedText;
+            
+            statusMsg.innerHTML = '<i class="fas fa-check-circle"></i> Texto extraído correctamente';
+            chatReadyBadge.innerHTML = '<i class="fas fa-check-circle"></i> Contexto listo';
+            chatReadyBadge.style.background = "#d9f0e3";
+            
+            // Habilitar chat
+            queryInput.disabled = false;
+            btnSend.disabled = false;
+            
+            addMessageToChat("ai", `✅ Texto extraído correctamente. ¡Puedes hacer preguntas sobre la imagen!`);
+            
+        } catch (error) {
+            console.error(error);
+            statusMsg.innerHTML = '<i class="fas fa-times-circle"></i> Error al extraer texto';
+            ocrTextDiv.innerHTML = `<span style="color: #ef4444;">❌ Error: ${error.message}</span>`;
+            chatReadyBadge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error OCR';
+            chatReadyBadge.style.background = "#fee2e2";
+        } finally {
+            btnProcess.disabled = false;
+            btnProcess.innerHTML = '<i class="fas fa-robot"></i> Extraer texto';
+        }
+    });
+
+    // Enviar pregunta al chat
+    btnSend.addEventListener("click", async () => {
+        const question = queryInput.value.trim();
+        if (!question) return;
+        
+        if (!extractedText || extractedText === "No se detectó texto legible en la imagen.") {
+            addMessageToChat("ai", "⚠️ No hay texto de contexto. Por favor, extrae el texto de la imagen primero.", true);
+            return;
+        }
+        
+        // Mostrar pregunta del usuario
+        addMessageToChat("user", question);
+        queryInput.value = "";
+        
+        // Deshabilitar mientras se procesa
+        btnSend.disabled = true;
+        queryInput.disabled = true;
+        
+        // Mostrar indicador de pensamiento
+        const thinkingDiv = document.createElement("div");
+        thinkingDiv.className = "message ai";
+        thinkingDiv.innerHTML = `
+            <div class="avatar"><i class="fas fa-robot"></i></div>
+            <div class="bubble" style="background: #eef2ff;">
+                Pensando <span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span>
+            </div>
+        `;
+        chatBox.appendChild(thinkingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        try {
+            const response = await fetch("/api/ocr/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    pregunta: question, 
+                    contexto: extractedText, 
+                    historial: chatHistory.slice(-10) 
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error("Error al consultar el asistente");
+            }
+            
+            const data = await response.json();
+            thinkingDiv.remove();
+            addMessageToChat("ai", data.respuesta);
+            
+            // Guardar historial
+            chatHistory.push(question, data.respuesta);
+            if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+            
+        } catch (error) {
+            thinkingDiv.remove();
+            addMessageToChat("ai", error.message, true);
+        } finally {
+            btnSend.disabled = false;
+            queryInput.disabled = false;
+            queryInput.focus();
+        }
+    });
+
+    // Enviar con Enter
+    queryInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !btnSend.disabled && queryInput.disabled === false) {
+            e.preventDefault();
+            btnSend.click();
+        }
+    });
+</script>
+</body>
+</html>
